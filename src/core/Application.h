@@ -4,6 +4,8 @@
 #include "../rendering/CircleRenderer.h"
 #include "../rendering/TextRenderer.h"
 #include "../game/GameState.h"
+#include "../ui/Slider.h"
+#include "../ui/Button.h"
 #include "Time.h"
 
 class Application {
@@ -23,6 +25,13 @@ private:
     CircleRenderer circleRenderer;
     TextRenderer textRenderer;
 
+    // UI elements
+    Slider bouncinessSlider;
+    Slider ballSizeSlider;
+    Button resetButton;
+    float restitution;
+    float ballRadius;
+
     bool running;
     float accumulator;  // For fixed timestep
 
@@ -35,4 +44,7 @@ private:
     void renderContainer();
     void renderBalls();
     void renderUI();
+
+    // Reset functionality
+    void resetSimulation();
 };

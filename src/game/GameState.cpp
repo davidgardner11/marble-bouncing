@@ -20,12 +20,12 @@ void GameState::initialize() {
     ballManager.spawnInitialBall();
 }
 
-void GameState::update(float deltaTime) {
+void GameState::update(float deltaTime, float restitution) {
     // Update container rotation
     container.update(deltaTime);
 
     // Update physics simulation
-    physics.update(ballManager.getBalls(), container, deltaTime);
+    physics.update(ballManager.getBalls(), container, deltaTime, restitution);
 
     // Update ball manager (remove off-screen balls, spawn replacements)
     ballManager.update(

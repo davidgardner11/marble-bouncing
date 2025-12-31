@@ -21,6 +21,9 @@ public:
     // Stats
     size_t getBallCount() const { return balls.size(); }
 
+    // Configuration
+    void setBallRadius(float radius) { ballRadius = radius; }
+
 private:
     std::vector<Ball> balls;
     Vector2D spawnCenter;

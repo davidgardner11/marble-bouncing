@@ -41,6 +41,24 @@ namespace Config {
     constexpr int TIMER_DISPLAY_Y = 70;
     constexpr int UI_FONT_SIZE = 20;
 
+    // Slider settings
+    constexpr int SLIDER_X = WINDOW_WIDTH - 220;
+    constexpr int SLIDER_Y = 20;
+    constexpr int SLIDER_WIDTH = 200;
+    constexpr int SLIDER_HEIGHT = 20;
+
+    // Ball size slider settings
+    constexpr int SIZE_SLIDER_X = WINDOW_WIDTH - 220;
+    constexpr int SIZE_SLIDER_Y = 70;
+    constexpr int SIZE_SLIDER_WIDTH = 200;
+    constexpr int SIZE_SLIDER_HEIGHT = 20;
+
+    // Button settings
+    constexpr int RESET_BUTTON_X = 10;
+    constexpr int RESET_BUTTON_Y = 100;
+    constexpr int RESET_BUTTON_WIDTH = 100;
+    constexpr int RESET_BUTTON_HEIGHT = 30;
+
     // Colors
     const SDL_Color BACKGROUND_COLOR = {20, 20, 30, 255};
     const SDL_Color CONTAINER_COLOR = {200, 200, 200, 255};

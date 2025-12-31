@@ -1,6 +1,6 @@
 #include "CollisionResolver.h"
 
-void CollisionResolver::resolveElasticCollision(Ball& a, Ball& b, const CollisionInfo& info) {
+void CollisionResolver::resolveElasticCollision(Ball& a, Ball& b, const CollisionInfo& info, float restitution) {
     if (!info.hasCollision) {
         return;
     }
@@ -35,15 +35,19 @@ void CollisionResolver::resolveElasticCollision(Ball& a, Ball& b, const Collisio
     float v1n_new = ((m1 - m2) * v1n + 2.0f * m2 * v2n) / totalMass;
     float v2n_new = ((m2 - m1) * v2n + 2.0f * m1 * v1n) / totalMass;
 
+    // Apply restitution coefficient
+    float v1n_change = (v1n_new - v1n) * restitution;
+    float v2n_change = (v2n_new - v2n) * restitution;
+
     // Update velocities
-    a.velocity += normal * (v1n_new - v1n);
-    b.velocity += normal * (v2n_new - v2n);
+    a.velocity += normal * v1n_change;
+    b.velocity += normal * v2n_change;
 
     // Separate balls to prevent overlap
     separateBalls(a, b, info.penetration, normal);
 }
 
-void CollisionResolver::resolveWallCollision(Ball& ball, const CollisionInfo& info) {
+void CollisionResolver::resolveWallCollision(Ball& ball, const CollisionInfo& info, float restitution) {
     if (!info.hasCollision) {
         return;
     }
@@ -59,8 +63,8 @@ void CollisionResolver::resolveWallCollision(Ball& ball, const CollisionInfo& in
         return;
     }
 
-    // Reflect velocity across normal (100% restitution)
-    ball.velocity -= normal * (2.0f * velocityAlongNormal);
+    // Reflect velocity across normal with restitution
+    ball.velocity -= normal * (2.0f * velocityAlongNormal * restitution);
 
     // Position correction: push ball back inside container
     ball.position -= normal * info.penetration;

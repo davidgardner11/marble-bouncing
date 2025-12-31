@@ -29,7 +29,10 @@ set(SOURCES
     src/game/BallManager.cpp
     src/rendering/Renderer.cpp
     src/rendering/CircleRenderer.cpp
+    src/rendering/CircleTextureCache.cpp
     src/rendering/TextRenderer.cpp
+    src/ui/Slider.cpp
+    src/ui/Button.cpp
     src/core/Application.cpp
     src/core/Time.cpp
 )

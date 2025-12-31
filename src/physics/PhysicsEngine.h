@@ -12,7 +12,7 @@ public:
     PhysicsEngine(float gravity);
 
     // Main physics update
-    void update(std::vector<Ball>& balls, const Container& container, float deltaTime);
+    void update(std::vector<Ball>& balls, const Container& container, float deltaTime, float restitution);
 
     // Configuration
     void setGravity(float gravity) { this->gravity = gravity; }
@@ -28,7 +28,7 @@ private:
     // Update steps
     void applyGravity(std::vector<Ball>& balls, float deltaTime);
     void updatePositions(std::vector<Ball>& balls, float deltaTime);
-    void handleCollisions(std::vector<Ball>& balls, const Container& container);
-    void handleBallBallCollisions(std::vector<Ball>& balls);
-    void handleBallContainerCollisions(std::vector<Ball>& balls, const Container& container);
+    void handleCollisions(std::vector<Ball>& balls, const Container& container, float restitution);
+    void handleBallBallCollisions(std::vector<Ball>& balls, float restitution);
+    void handleBallContainerCollisions(std::vector<Ball>& balls, const Container& container, float restitution);
 };
