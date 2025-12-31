@@ -17,7 +17,7 @@ void BallManager::spawnInitialBall() {
     balls.push_back(ball);
 }
 
-void BallManager::update(float screenWidth, float screenHeight) {
+void BallManager::update(float screenWidth, float screenHeight, int respawnCount) {
     // Count how many balls are off-screen
     size_t offScreenCount = 0;
 
@@ -32,9 +32,9 @@ void BallManager::update(float screenWidth, float screenHeight) {
         }
     }
 
-    // Spawn 2 replacement balls for each removed ball
+    // Spawn replacement balls for each removed ball
     if (offScreenCount > 0) {
-        spawnReplacementBalls(offScreenCount * 2);
+        spawnReplacementBalls(offScreenCount * respawnCount);
     }
 }
 

@@ -12,7 +12,7 @@ public:
     void spawnInitialBall();
 
     // Update: remove off-screen balls and spawn replacements
-    void update(float screenWidth, float screenHeight);
+    void update(float screenWidth, float screenHeight, int respawnCount = 2);
 
     // Access balls
     std::vector<Ball>& getBalls() { return balls; }

@@ -7,15 +7,31 @@ Application::Application()
     : renderer(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, Config::WINDOW_TITLE)
     , bouncinessSlider(Config::SLIDER_X, Config::SLIDER_Y, Config::SLIDER_WIDTH, Config::SLIDER_HEIGHT, 0.8f, 1.2f, Config::RESTITUTION)
     , ballSizeSlider(Config::SIZE_SLIDER_X, Config::SIZE_SLIDER_Y, Config::SIZE_SLIDER_WIDTH, Config::SIZE_SLIDER_HEIGHT, 5.0f, 25.0f, Config::BALL_RADIUS)
+    , holeSizeSlider(Config::HOLE_SLIDER_X, Config::HOLE_SLIDER_Y, Config::HOLE_SLIDER_WIDTH, Config::HOLE_SLIDER_HEIGHT, 10.0f, 180.0f, Config::CONTAINER_GAP_PERCENT * 360.0f)
+    , respawnCountSlider(Config::RESPAWN_SLIDER_X, Config::RESPAWN_SLIDER_Y, Config::RESPAWN_SLIDER_WIDTH, Config::RESPAWN_SLIDER_HEIGHT, 0.1f, 10.0f, 2.0f)
+    , gravitySlider(Config::GRAVITY_SLIDER_X, Config::GRAVITY_SLIDER_Y, Config::GRAVITY_SLIDER_WIDTH, Config::GRAVITY_SLIDER_HEIGHT, 0.0f, 20.0f, 9.8f)
+    , diameterSlider(Config::DIAMETER_SLIDER_X, Config::DIAMETER_SLIDER_Y, Config::DIAMETER_SLIDER_WIDTH, Config::DIAMETER_SLIDER_HEIGHT, 200.0f, 600.0f, Config::CONTAINER_RADIUS * 2.0f)
     , resetButton(Config::RESET_BUTTON_X, Config::RESET_BUTTON_Y, Config::RESET_BUTTON_WIDTH, Config::RESET_BUTTON_HEIGHT, "Reset")
+    , pauseButton(Config::PAUSE_BUTTON_X, Config::PAUSE_BUTTON_Y, Config::PAUSE_BUTTON_WIDTH, Config::PAUSE_BUTTON_HEIGHT, "Pause")
     , restitution(Config::RESTITUTION)
     , ballRadius(Config::BALL_RADIUS)
+    , holeSize(Config::CONTAINER_GAP_PERCENT * 360.0f)
+    , respawnRate(2.0f)
+    , gravity(9.8f)
+    , containerDiameter(Config::CONTAINER_RADIUS * 2.0f)
+    , ballDebt(0.0f)
     , running(false)
+    , paused(false)
     , accumulator(0.0f)
 {
     // Set up reset button callback
     resetButton.setOnClick([this]() {
         resetSimulation();
+    });
+
+    // Set up pause button callback
+    pauseButton.setOnClick([this]() {
+        paused = !paused;
     });
 }
 
@@ -92,28 +108,77 @@ void Application::handleEvents() {
         } else if (event.type == SDL_MOUSEBUTTONDOWN) {
             bouncinessSlider.handleMouseDown(event.button.x, event.button.y);
             ballSizeSlider.handleMouseDown(event.button.x, event.button.y);
+            holeSizeSlider.handleMouseDown(event.button.x, event.button.y);
+            respawnCountSlider.handleMouseDown(event.button.x, event.button.y);
+            gravitySlider.handleMouseDown(event.button.x, event.button.y);
+            diameterSlider.handleMouseDown(event.button.x, event.button.y);
             resetButton.handleMouseDown(event.button.x, event.button.y);
+            pauseButton.handleMouseDown(event.button.x, event.button.y);
         } else if (event.type == SDL_MOUSEBUTTONUP) {
             bouncinessSlider.handleMouseUp();
             ballSizeSlider.handleMouseUp();
+            holeSizeSlider.handleMouseUp();
+            respawnCountSlider.handleMouseUp();
+            gravitySlider.handleMouseUp();
+            diameterSlider.handleMouseUp();
             resetButton.handleMouseUp(event.button.x, event.button.y);
+            pauseButton.handleMouseUp(event.button.x, event.button.y);
         } else if (event.type == SDL_MOUSEMOTION) {
             bouncinessSlider.handleMouseMove(event.motion.x, event.motion.y);
             ballSizeSlider.handleMouseMove(event.motion.x, event.motion.y);
+            holeSizeSlider.handleMouseMove(event.motion.x, event.motion.y);
+            respawnCountSlider.handleMouseMove(event.motion.x, event.motion.y);
+            gravitySlider.handleMouseMove(event.motion.x, event.motion.y);
+            diameterSlider.handleMouseMove(event.motion.x, event.motion.y);
             resetButton.handleMouseMove(event.motion.x, event.motion.y);
-            // Update restitution from slider
+            pauseButton.handleMouseMove(event.motion.x, event.motion.y);
+            // Update values from sliders
             restitution = bouncinessSlider.getValue();
-            // Update ball radius from slider
             ballRadius = ballSizeSlider.getValue();
+            holeSize = holeSizeSlider.getValue();
+            respawnRate = respawnCountSlider.getValue();
+            gravity = gravitySlider.getValue();
+            containerDiameter = diameterSlider.getValue();
         }
     }
 }
 
 void Application::update(float deltaTime) {
-    // Update ball radius in ball manager
-    gameState.getBallManager().setBallRadius(ballRadius);
+    // Skip update if paused
+    if (paused) {
+        return;
+    }
 
-    gameState.update(deltaTime, restitution);
+    // Update configurable parameters
+    gameState.getBallManager().setBallRadius(ballRadius);
+    gameState.getContainer().setGapAngleDegrees(holeSize);
+    gameState.getContainer().setRadius(containerDiameter / 2.0f);
+    gameState.getPhysics().setGravity(gravity * 100.0f); // Convert m/s² to px/s²
+
+    // Handle fractional respawn rate with debt accumulation
+    // Get current ball count before update
+    size_t ballsBefore = gameState.getBallCount();
+
+    // Update game state (this removes off-screen balls)
+    gameState.update(deltaTime, restitution, 0); // Pass 0 to prevent auto-respawn
+
+    // Calculate how many balls were removed
+    size_t ballsAfter = gameState.getBallCount();
+    int ballsRemoved = static_cast<int>(ballsBefore - ballsAfter);
+
+    if (ballsRemoved > 0) {
+        // Add fractional balls to debt
+        ballDebt += ballsRemoved * respawnRate;
+
+        // Spawn whole balls from debt
+        int ballsToSpawn = static_cast<int>(ballDebt);
+        if (ballsToSpawn > 0) {
+            for (int i = 0; i < ballsToSpawn; ++i) {
+                gameState.getBallManager().spawnInitialBall();
+            }
+            ballDebt -= ballsToSpawn;
+        }
+    }
 }
 
 void Application::render() {
@@ -177,6 +242,16 @@ void Application::renderUI() {
         Config::TEXT_COLOR
     );
 
+    // Render pause button
+    pauseButton.render(renderer.getSDLRenderer());
+    textRenderer.renderText(
+        renderer.getSDLRenderer(),
+        paused ? "Resume" : "Pause",
+        Config::PAUSE_BUTTON_X + (paused ? 18 : 22),
+        Config::PAUSE_BUTTON_Y + 7,
+        Config::TEXT_COLOR
+    );
+
     // Render FPS (cached)
     textRenderer.renderFPSCached(
         renderer.getSDLRenderer(),
@@ -226,6 +301,68 @@ void Application::renderUI() {
         sizeLabel,
         Config::SIZE_SLIDER_X,
         Config::SIZE_SLIDER_Y - 25,
+        Config::TEXT_COLOR
+    );
+
+    // Render hole size slider
+    holeSizeSlider.render(renderer.getSDLRenderer(), "Hole Size");
+
+    // Render hole size label and value
+    char holeLabel[64];
+    snprintf(holeLabel, sizeof(holeLabel), "Hole Size: %.0f deg", holeSize);
+    textRenderer.renderText(
+        renderer.getSDLRenderer(),
+        holeLabel,
+        Config::HOLE_SLIDER_X,
+        Config::HOLE_SLIDER_Y - 25,
+        Config::TEXT_COLOR
+    );
+
+    // Render respawn rate slider
+    respawnCountSlider.render(renderer.getSDLRenderer(), "Respawn Rate");
+
+    // Render respawn rate label and value
+    char respawnLabel[64];
+    if (respawnRate >= 1.0f) {
+        snprintf(respawnLabel, sizeof(respawnLabel), "Respawn: %dx", static_cast<int>(respawnRate));
+    } else {
+        // For rates < 1, show as "2:1" ratio format
+        float ratio = 1.0f / respawnRate;
+        snprintf(respawnLabel, sizeof(respawnLabel), "Respawn: %.0f:1 balls", ratio);
+    }
+    textRenderer.renderText(
+        renderer.getSDLRenderer(),
+        respawnLabel,
+        Config::RESPAWN_SLIDER_X,
+        Config::RESPAWN_SLIDER_Y - 25,
+        Config::TEXT_COLOR
+    );
+
+    // Render gravity slider
+    gravitySlider.render(renderer.getSDLRenderer(), "Gravity");
+
+    // Render gravity label and value
+    char gravityLabel[64];
+    snprintf(gravityLabel, sizeof(gravityLabel), "Gravity: %.1f m/s^2", gravity);
+    textRenderer.renderText(
+        renderer.getSDLRenderer(),
+        gravityLabel,
+        Config::GRAVITY_SLIDER_X,
+        Config::GRAVITY_SLIDER_Y - 25,
+        Config::TEXT_COLOR
+    );
+
+    // Render container diameter slider
+    diameterSlider.render(renderer.getSDLRenderer(), "Container Diameter");
+
+    // Render diameter label and value
+    char diameterLabel[64];
+    snprintf(diameterLabel, sizeof(diameterLabel), "Diameter: %.0fpx", containerDiameter);
+    textRenderer.renderText(
+        renderer.getSDLRenderer(),
+        diameterLabel,
+        Config::DIAMETER_SLIDER_X,
+        Config::DIAMETER_SLIDER_Y - 25,
         Config::TEXT_COLOR
     );
 }

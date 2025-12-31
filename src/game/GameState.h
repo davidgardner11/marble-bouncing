@@ -9,7 +9,7 @@ public:
     GameState();
 
     void initialize();
-    void update(float deltaTime, float restitution);
+    void update(float deltaTime, float restitution, int respawnCount = 2);
 
     // Access game objects
     BallManager& getBallManager() { return ballManager; }

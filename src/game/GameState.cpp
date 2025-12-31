@@ -20,7 +20,7 @@ void GameState::initialize() {
     ballManager.spawnInitialBall();
 }
 
-void GameState::update(float deltaTime, float restitution) {
+void GameState::update(float deltaTime, float restitution, int respawnCount) {
     // Update container rotation
     container.update(deltaTime);
 
@@ -30,7 +30,8 @@ void GameState::update(float deltaTime, float restitution) {
     // Update ball manager (remove off-screen balls, spawn replacements)
     ballManager.update(
         static_cast<float>(Config::WINDOW_WIDTH),
-        static_cast<float>(Config::WINDOW_HEIGHT)
+        static_cast<float>(Config::WINDOW_HEIGHT),
+        respawnCount
     );
 }
 

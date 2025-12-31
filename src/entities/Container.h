@@ -23,6 +23,10 @@ public:
     float getCurrentRotation() const { return currentAngleRad; }
     float getGapAngleDegrees() const { return gapAngleDegrees; }
 
+    // Configuration
+    void setGapAngleDegrees(float degrees) { gapAngleDegrees = degrees; }
+    void setRadius(float newRadius) { radius = newRadius; }
+
 private:
     Vector2D center;
     float radius;

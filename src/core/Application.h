@@ -28,11 +28,22 @@ private:
     // UI elements
     Slider bouncinessSlider;
     Slider ballSizeSlider;
+    Slider holeSizeSlider;
+    Slider respawnCountSlider;
+    Slider gravitySlider;
+    Slider diameterSlider;
     Button resetButton;
+    Button pauseButton;
     float restitution;
     float ballRadius;
+    float holeSize;
+    float respawnRate;
+    float gravity;
+    float containerDiameter;
+    float ballDebt;  // Accumulated fractional balls for negative respawning
 
     bool running;
+    bool paused;
     float accumulator;  // For fixed timestep
 
     // Game loop methods
