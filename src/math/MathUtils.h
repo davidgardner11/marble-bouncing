@@ -41,6 +41,11 @@ namespace MathUtils {
         start = normalizeAngle(start);
         end = normalizeAngle(end);
 
+        // Special case: if start equals end (zero-width range), no angle is in range
+        if (floatEquals(start, end)) {
+            return false;
+        }
+
         if (start < end) {
             // Normal case: no wrap-around
             return angle >= start && angle <= end;

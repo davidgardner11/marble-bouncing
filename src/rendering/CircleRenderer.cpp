@@ -120,9 +120,15 @@ void CircleRenderer::drawArc(
 {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
-    // Normalize angles
-    startAngleRad = MathUtils::normalizeAngle(startAngleRad);
-    endAngleRad = MathUtils::normalizeAngle(endAngleRad);
+    // Check if this is a full circle (arc spans >= 2π)
+    float arcSpan = endAngleRad - startAngleRad;
+    bool isFullCircle = arcSpan >= MathUtils::TWO_PI || MathUtils::floatEquals(arcSpan, MathUtils::TWO_PI);
+
+    // Normalize angles only if not a full circle
+    if (!isFullCircle) {
+        startAngleRad = MathUtils::normalizeAngle(startAngleRad);
+        endAngleRad = MathUtils::normalizeAngle(endAngleRad);
+    }
 
     // Draw arc by plotting points along the circumference
     int numPoints = static_cast<int>(radius * 4);  // More points for smoother arcs
@@ -133,7 +139,10 @@ void CircleRenderer::drawArc(
 
         // Check if this angle is within the arc range
         bool inRange;
-        if (startAngleRad < endAngleRad) {
+        if (isFullCircle) {
+            // Full circle - always draw
+            inRange = true;
+        } else if (startAngleRad < endAngleRad) {
             inRange = (angle >= startAngleRad && angle <= endAngleRad);
         } else {
             // Wrap-around case

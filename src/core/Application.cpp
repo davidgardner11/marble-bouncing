@@ -7,10 +7,10 @@ Application::Application()
     : renderer(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, Config::WINDOW_TITLE)
     , bouncinessSlider(Config::SLIDER_X, Config::SLIDER_Y, Config::SLIDER_WIDTH, Config::SLIDER_HEIGHT, 0.8f, 1.2f, Config::RESTITUTION)
     , ballSizeSlider(Config::SIZE_SLIDER_X, Config::SIZE_SLIDER_Y, Config::SIZE_SLIDER_WIDTH, Config::SIZE_SLIDER_HEIGHT, 5.0f, 25.0f, Config::BALL_RADIUS)
-    , holeSizeSlider(Config::HOLE_SLIDER_X, Config::HOLE_SLIDER_Y, Config::HOLE_SLIDER_WIDTH, Config::HOLE_SLIDER_HEIGHT, 10.0f, 180.0f, Config::CONTAINER_GAP_PERCENT * 360.0f)
+    , holeSizeSlider(Config::HOLE_SLIDER_X, Config::HOLE_SLIDER_Y, Config::HOLE_SLIDER_WIDTH, Config::HOLE_SLIDER_HEIGHT, 0.0f, 180.0f, Config::CONTAINER_GAP_PERCENT * 360.0f)
     , respawnCountSlider(Config::RESPAWN_SLIDER_X, Config::RESPAWN_SLIDER_Y, Config::RESPAWN_SLIDER_WIDTH, Config::RESPAWN_SLIDER_HEIGHT, 0.1f, 10.0f, 2.0f)
     , gravitySlider(Config::GRAVITY_SLIDER_X, Config::GRAVITY_SLIDER_Y, Config::GRAVITY_SLIDER_WIDTH, Config::GRAVITY_SLIDER_HEIGHT, 0.0f, 20.0f, 9.8f)
-    , diameterSlider(Config::DIAMETER_SLIDER_X, Config::DIAMETER_SLIDER_Y, Config::DIAMETER_SLIDER_WIDTH, Config::DIAMETER_SLIDER_HEIGHT, 200.0f, 600.0f, Config::CONTAINER_RADIUS * 2.0f)
+    , diameterSlider(Config::DIAMETER_SLIDER_X, Config::DIAMETER_SLIDER_Y, Config::DIAMETER_SLIDER_WIDTH, Config::DIAMETER_SLIDER_HEIGHT, 200.0f, 800.0f, Config::CONTAINER_RADIUS * 2.0f)
     , resetButton(Config::RESET_BUTTON_X, Config::RESET_BUTTON_Y, Config::RESET_BUTTON_WIDTH, Config::RESET_BUTTON_HEIGHT, "Reset")
     , pauseButton(Config::PAUSE_BUTTON_X, Config::PAUSE_BUTTON_Y, Config::PAUSE_BUTTON_WIDTH, Config::PAUSE_BUTTON_HEIGHT, "Pause")
     , restitution(Config::RESTITUTION)
@@ -178,6 +178,12 @@ void Application::update(float deltaTime) {
             }
             ballDebt -= ballsToSpawn;
         }
+    }
+
+    // Ensure at least one ball exists to keep simulation running
+    if (gameState.getBallCount() == 0) {
+        gameState.getBallManager().spawnInitialBall();
+        ballDebt = 0.0f; // Reset debt when respawning safety ball
     }
 }
 
