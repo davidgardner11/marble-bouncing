@@ -262,16 +262,12 @@ void Application::renderUI() {
 
     // Render ball count (cached)
     textRenderer.renderBallCountCached(
-    // Render ball count (cached)
-    textRenderer.renderBallCountCached(
         renderer.getSDLRenderer(),
         gameState.getBallCount(),
         Config::BALL_COUNT_X,
         Config::BALL_COUNT_Y
     );
 
-    // Render timer (cached)
-    textRenderer.renderTimerCached(
     // Render timer (cached)
     textRenderer.renderTimerCached(
         renderer.getSDLRenderer(),
